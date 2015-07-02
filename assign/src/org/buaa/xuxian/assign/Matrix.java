@@ -2,7 +2,7 @@ package org.buaa.xuxian.assign;
 
 import java.util.Arrays;
 
-public class Matrix {
+public class Matrix implements Cloneable {
 	int row;
 	int col;
 	Index max_index;
@@ -28,31 +28,126 @@ public class Matrix {
 		}
 	}
 	
-	private void SetRow(int row, double value){
+	@Override
+	public Matrix clone(){
+		Matrix o = null;
+		try {
+			o = (Matrix) super.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+		o.max_index = this.max_index.clone();
+		o.data = new double[this.row][this.col];
+		for (int i = 0; i < this.row; i++){
+			o.data[i] = Arrays.copyOf(this.data[i], this.data[i].length);
+		}
+		return o;
+	}
+	
+	public double Sum(){
+		double sum = 0;
+		for (int i = 0; i < this.row; i++){
+			for (int j = 0; j < this.col; j++){
+				sum += this.data[i][j];
+			}
+		}
+		return sum;
+	}
+	
+	public void DotMultiply2(Matrix matb){
+		for (int i = 0; i < this.row; i++){
+			for (int j = 0; j < this.col; j++){
+				this.data[i][j] = this.data[i][j] * matb.data[i][j];
+			}
+		}
+	}
+	
+	public Matrix DotMultiply3(Matrix matb){
+		Matrix matc = new Matrix(this.row, this.col);
+		for (int i = 0; i < this.row; i++){
+			for (int j = 0; j < this.col; j++){
+				matc.data[i][j] = this.data[i][j] * matb.data[i][j];
+			}
+		}
+		return matc;
+	}
+	
+	public void SetRow(int row, double value){
 		Arrays.fill(this.data[row], value);
 	}
 	
-	private void SetCol(int col, double value){
-		
+	public void SetCol(int col, double value){
+		for (int i = 0; i < this.row; i++){
+			this.data[i][col] = value;
+		}
 	}
 	
-	
-	
-	
-	
-	public static void main(String[] args){
-		Matrix mat = new Matrix(10, 10);
-		System.out.println("data is:");
-		for (int i = 0; i < mat.row; i++){
-			for (int j = 0; j < mat.col; j++){
-				System.out.println(mat.data[i][j]);
+	public void IndexingMax(){
+		RowMax(0);
+		this.max_index.value = this.max_index.row_value[0];
+		this.max_index.i = 0;
+		this.max_index.j = this.max_index.row_index[0];
+		
+		for (int i = 1; i < this.row; i++){
+			RowMax(i);
+			if (this.max_index.row_value[i] > this.max_index.value){
+				this.max_index.value = this.max_index.row_value[i];
+				this.max_index.i = i;
+				this.max_index.j = this.max_index.row_index[i];
 			}
 		}
+		
+		for (int j = 0; j < this.col; j++){
+			ColMax(j);
+		}
+	}
+	
+	@Override
+	public String toString(){
+		StringBuffer datastr = new StringBuffer();
+		for (int i = 0; i < this.row; i++){
+			datastr.append(Arrays.toString(this.data[i])).append("\r\n");
+		}
+		return "row is: " + this.row + "\r\n" + 
+			   "col is: " + this.col + "\r\n" +
+			   datastr.toString() + 
+			   this.max_index.toString();
+	}
+	
+	private void RowMax(int i){
+		this.max_index.row_value[i] = this.data[i][0];
+		this.max_index.row_index[i] = 0;
+		for (int counter = 0; counter < this.col; counter++){
+			if (this.data[i][counter] > this.max_index.row_value[i]){
+				this.max_index.row_value[i] = this.data[i][counter];
+				this.max_index.row_index[i] = counter;
+			}
+		}
+	}
+	
+	private void ColMax(int j){
+		this.max_index.col_value[j] = this.data[0][j];
+		this.max_index.col_index[j] = 0;
+		for (int counter = 0; counter < this.row; counter++){
+			if (this.data[counter][j] > this.max_index.col_value[j]){
+				this.max_index.col_value[j] = this.data[counter][j];
+				this.max_index.col_index[j] = counter;
+			}
+		}
+	}
+	
+	public static void main(String[] args){
+		Matrix mat = new Matrix(10, 10, 10);
+		Matrix matb = mat.clone();
+		mat.SetRow(0, 122);
+		mat.IndexingMax();
+		System.out.println(mat);
+		System.out.println(matb);
 	}
 
 }
 
- class Index {
+ class Index implements Cloneable {
 	protected int row_index[];
 	protected double row_value[];
 	protected int col_index[];
@@ -76,5 +171,34 @@ public class Matrix {
 		this.i = -1;
 		this.j = -1;
 		this.value = 0;
+	}
+	
+	@Override
+	public String toString(){
+		return "max value is: " + this.value + "\r\n" + 
+			   "max i is: " + this.i + "\r\n" + 
+			   "max j is: " + this.j + "\r\n" +
+			   "row max index is: " + Arrays.toString(this.row_index) + "\r\n" +
+			   "row max value is: " + Arrays.toString(this.row_value) + "\r\n" +
+			   "col max index is: " + Arrays.toString(this.col_index) + "\r\n" +
+			   "col max value is: " + Arrays.toString(this.col_value) + "\r\n";	   
+	}
+	
+	@Override
+	protected Index clone(){
+		Index o = null;
+		try {
+			o = (Index) super.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+		
+		o.row_index = Arrays.copyOf(this.row_index, this.row_index.length);
+		o.row_value = Arrays.copyOf(this.row_value, this.row_value.length);
+		
+		o.col_index = Arrays.copyOf(this.col_index, this.col_index.length);
+		o.col_value = Arrays.copyOf(this.col_value, this.col_value.length);
+		
+		return o;
 	}
 }
