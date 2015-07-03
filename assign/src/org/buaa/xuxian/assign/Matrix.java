@@ -3,12 +3,12 @@ package org.buaa.xuxian.assign;
 import java.util.Arrays;
 
 public class Matrix implements Cloneable {
-	int row;
-	int col;
-	Index max_index;
-	double data[][];
+	protected int row;
+	protected int col;
+	protected Index max_index;
+	protected double data[][];
 	
-	public Matrix(int i, int j){
+	protected Matrix(int i, int j){
 		this.row = i;
 		this.col = j;
 		this.max_index = new Index(i, j);
@@ -18,7 +18,7 @@ public class Matrix implements Cloneable {
 		}
 	}
 	
-	public Matrix(int i, int j, double value){
+	protected Matrix(int i, int j, double value){
 		this.row = i;
 		this.col = j;
 		this.max_index = new Index(i, j);
@@ -44,17 +44,17 @@ public class Matrix implements Cloneable {
 		return o;
 	}
 	
-	public double Sum(){
-		double sum = 0;
+	protected double sum(){
+		double Sum = 0;
 		for (int i = 0; i < this.row; i++){
 			for (int j = 0; j < this.col; j++){
-				sum += this.data[i][j];
+				Sum += this.data[i][j];
 			}
 		}
-		return sum;
+		return Sum;
 	}
 	
-	public void DotMultiply2(Matrix matb){
+	protected void dotMultiply2(Matrix matb){
 		for (int i = 0; i < this.row; i++){
 			for (int j = 0; j < this.col; j++){
 				this.data[i][j] = this.data[i][j] * matb.data[i][j];
@@ -62,7 +62,7 @@ public class Matrix implements Cloneable {
 		}
 	}
 	
-	public Matrix DotMultiply3(Matrix matb){
+	protected Matrix dotMultiply3(Matrix matb){
 		Matrix matc = new Matrix(this.row, this.col);
 		for (int i = 0; i < this.row; i++){
 			for (int j = 0; j < this.col; j++){
@@ -72,24 +72,28 @@ public class Matrix implements Cloneable {
 		return matc;
 	}
 	
-	public void SetRow(int row, double value){
+	protected void setRow(int row, double value){
 		Arrays.fill(this.data[row], value);
 	}
 	
-	public void SetCol(int col, double value){
+	protected void setRow(int row, double[] data){
+		this.data[row] = Arrays.copyOf(data, this.data[row].length);
+	}
+	
+	protected void setCol(int col, double value){
 		for (int i = 0; i < this.row; i++){
 			this.data[i][col] = value;
 		}
 	}
 	
-	public void IndexingMax(){
-		RowMax(0);
+	protected void indexingMax(){
+		rowMax(0);
 		this.max_index.value = this.max_index.row_value[0];
 		this.max_index.i = 0;
 		this.max_index.j = this.max_index.row_index[0];
 		
 		for (int i = 1; i < this.row; i++){
-			RowMax(i);
+			rowMax(i);
 			if (this.max_index.row_value[i] > this.max_index.value){
 				this.max_index.value = this.max_index.row_value[i];
 				this.max_index.i = i;
@@ -98,7 +102,7 @@ public class Matrix implements Cloneable {
 		}
 		
 		for (int j = 0; j < this.col; j++){
-			ColMax(j);
+			colMax(j);
 		}
 	}
 	
@@ -114,7 +118,7 @@ public class Matrix implements Cloneable {
 			   this.max_index.toString();
 	}
 	
-	private void RowMax(int i){
+	private void rowMax(int i){
 		this.max_index.row_value[i] = this.data[i][0];
 		this.max_index.row_index[i] = 0;
 		for (int counter = 0; counter < this.col; counter++){
@@ -125,7 +129,7 @@ public class Matrix implements Cloneable {
 		}
 	}
 	
-	private void ColMax(int j){
+	private void colMax(int j){
 		this.max_index.col_value[j] = this.data[0][j];
 		this.max_index.col_index[j] = 0;
 		for (int counter = 0; counter < this.row; counter++){
@@ -139,8 +143,8 @@ public class Matrix implements Cloneable {
 	public static void main(String[] args){
 		Matrix mat = new Matrix(10, 10, 10);
 		Matrix matb = mat.clone();
-		mat.SetRow(0, 122);
-		mat.IndexingMax();
+		mat.setRow(0, 122);
+		mat.indexingMax();
 		System.out.println(mat);
 		System.out.println(matb);
 	}
@@ -185,7 +189,7 @@ public class Matrix implements Cloneable {
 	}
 	
 	@Override
-	protected Index clone(){
+	public Index clone(){
 		Index o = null;
 		try {
 			o = (Index) super.clone();
