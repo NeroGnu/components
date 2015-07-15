@@ -44,7 +44,7 @@ public class ReceiveChannel {
 		this.head = (this.head + 1) % this.transQueue.length;
 		count--;
 		JSONObject rJson = JSONObject.fromObject(tempStr);
-		senderIP.append(rJson.getString("IP"));
+		senderIP.append(rJson.getString("IP").substring(1));
 		notifyAll();
 		return rJson.getString("content");
 	}

@@ -4,14 +4,27 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Random;
 
+import com.google.gson.Gson;
+
 import net.sf.json.JSONObject;
 
 public class Test1 implements Runnable, JsonObjectSwitch<Test1> {
 	public int a;
 	public int b;
 	public int c;
+	private int[] d;
 	private Random random;
 	private ReceiveChannel channel;
+	
+	public int[] getD() {
+		return d;
+	}
+
+	public void setD(int[] d) {
+		this.d = d;
+	}
+
+	
 	
 	public Test1(ReceiveChannel channel){
 		this.channel = channel;
@@ -19,25 +32,31 @@ public class Test1 implements Runnable, JsonObjectSwitch<Test1> {
 		this.a = random.nextInt();
 		this.b = random.nextInt();
 		this.c = random.nextInt();
+		int[] e = {random.nextInt(), random.nextInt(), random.nextInt(), random.nextInt()};
+		this.setD(e);
+//		this.d = new int[0];
 	}
 	
 	@Override
 	public void run(){
-		JSONObject json;
+//		JSONObject json;
 		InetAddress senderIP = null;
 		StringBuffer strIP = new StringBuffer();
-		String[] tempStr;
+		Gson gson = new Gson();
+		
+//		String[] tempStr;
 		while (true){
-			json = JSONObject.fromObject(this.channel.takePacket(strIP));
-			tempStr = strIP.toString().split("/");
+//			json = JSONObject.fromObject(this.channel.takePacket(strIP));
+//			tempStr = strIP.toString().split("/");
+			Test1 te1 = gson.fromJson(this.channel.takePacket(strIP), Test1.class);
 			try {
-				senderIP = InetAddress.getByName(tempStr[1]);
+				senderIP = InetAddress.getByName(strIP.toString());
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			strIP.replace(0, strIP.length(), "");
-			System.out.println("from" + senderIP + "receive:" + toObject(json));
+			System.out.println("this is Test1  " + "from" + senderIP + "receive:" + te1);
 		}
 	}
 	
@@ -59,7 +78,7 @@ public class Test1 implements Runnable, JsonObjectSwitch<Test1> {
 	
 	@Override
 	public String toString(){
-		return this.a + " " + this.b + " " + this.c;
+		return this.a + " " + this.b + " " + this.c + " " + this.d[3];
 	}
 
 }

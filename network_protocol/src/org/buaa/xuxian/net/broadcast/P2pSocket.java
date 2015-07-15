@@ -19,6 +19,7 @@ public class P2pSocket extends Thread{
 	private DatagramPacket outPacket;
 	private ReceiveChannel receiveChannel;
 	private NeighbourList nbrList;
+	private int repeatCounter;
 	
 	public P2pSocket(String DES_IP, int port, int dataLen, ReceiveChannel rChannel) {
 		this.DES_PORT = port;
@@ -26,6 +27,7 @@ public class P2pSocket extends Thread{
 		this.inBuff = new byte[this.DATA_LEN];
 		this.receiveChannel = rChannel;
 		this.nbrList = new NeighbourList();
+		this.repeatCounter = 1;
 		
 		try {
 			this.socket = new DatagramSocket(this.DES_PORT);
@@ -44,6 +46,90 @@ public class P2pSocket extends Thread{
 		this.outPacket = new DatagramPacket(new byte[0] , 0 , this.desAddress , this.DES_PORT);
 	}
 	
+	public P2pSocket(String DES_IP, int port, int dataLen, ReceiveChannel rChannel, int repeatCounter) {
+		this.DES_PORT = port;
+		this.DATA_LEN = dataLen;
+		this.inBuff = new byte[this.DATA_LEN];
+		this.receiveChannel = rChannel;
+		this.nbrList = new NeighbourList();
+		this.repeatCounter = 1;
+		this.repeatCounter = repeatCounter;
+		
+		try {
+			this.socket = new DatagramSocket(this.DES_PORT);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			this.desAddress = InetAddress.getByName(DES_IP);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		this.inPacket = new DatagramPacket(inBuff , inBuff.length);
+		this.outPacket = new DatagramPacket(new byte[0] , 0 , this.desAddress , this.DES_PORT);
+	}
+	
+	public P2pSocket(P2pConfig config, ReceiveChannel rChannel, int repeatCounter) {
+		this.DES_PORT = config.port;
+		this.DATA_LEN = config.dataLen;
+		this.inBuff = new byte[this.DATA_LEN];
+		this.receiveChannel = rChannel;
+		this.nbrList = new NeighbourList();
+		this.repeatCounter = repeatCounter;
+		
+		try {
+			this.socket = new DatagramSocket(this.DES_PORT);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			this.desAddress = InetAddress.getByName(config.DES_IP);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		this.inPacket = new DatagramPacket(inBuff , inBuff.length);
+		this.outPacket = new DatagramPacket(new byte[0] , 0 , this.desAddress , this.DES_PORT);
+	}
+	
+	public P2pSocket(P2pConfig config, ReceiveChannel rChannel) {
+		this.DES_PORT = config.port;
+		this.DATA_LEN = config.dataLen;
+		this.inBuff = new byte[this.DATA_LEN];
+		this.receiveChannel = rChannel;
+		this.nbrList = new NeighbourList();
+		this.repeatCounter = 1;
+		
+		try {
+			this.socket = new DatagramSocket(this.DES_PORT);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			this.desAddress = InetAddress.getByName(config.DES_IP);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		this.inPacket = new DatagramPacket(inBuff , inBuff.length);
+		this.outPacket = new DatagramPacket(new byte[0] , 0 , this.desAddress , this.DES_PORT);
+	}
+	
+	public int getRepeatCounter() {
+		return repeatCounter;
+	}
+
+	public void setRepeatCounter(int repeatCounter) {
+		this.repeatCounter = repeatCounter;
+	}
+
 	public synchronized void setDesAddress(String BROADCAST_IP){
 		try {
 			this.desAddress = InetAddress.getByName(BROADCAST_IP);
@@ -62,31 +148,49 @@ public class P2pSocket extends Thread{
 			e.printStackTrace();
 		}
 		this.outPacket = new DatagramPacket(new byte[0] , 0 , this.desAddress , this.DES_PORT);
+		
 		String time_packet = "{\"time\":" + System.currentTimeMillis() + 
-				 ",\"content\":" + str +
-				 "}";
-
+				 			 ",\"content\":" + str +
+				 			 "}";
 		outPacket.setData(time_packet.getBytes());
-		try {
-		socket.send(outPacket);
-		} catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-		}
+		for (int i = 0; i < this.repeatCounter; i++){
+			
+			try {
+				socket.send(outPacket);
+				} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				}
+			
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}				
 	}
 	
 	public synchronized void send(String str){
 		String time_packet = "{\"time\":" + System.currentTimeMillis() + 
 							 ",\"content\":" + str +
 							 "}";
-		
 		outPacket.setData(time_packet.getBytes());
-		try {
-			socket.send(outPacket);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
+		for (int i = 0; i < this.repeatCounter; i++){
+			try {
+				socket.send(outPacket);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}				
 	}
 	
 	@Override
@@ -95,7 +199,7 @@ public class P2pSocket extends Thread{
 		JSONObject tempJason;
 		ReceviveTime tempRecord;
 		InetAddress selfAddr = null;
-//		long t1, t2;
+		
 		try {
 			selfAddr = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
@@ -106,7 +210,6 @@ public class P2pSocket extends Thread{
 		try {
 			while (true){
 				this.socket.receive(inPacket);
-//				t1 = System.currentTimeMillis();
 				if (!inPacket.getAddress().equals(selfAddr)){
 					if (inPacket.getPort() == this.DES_PORT){
 						tempStr = new String(inBuff, 0, inPacket.getLength());
@@ -116,9 +219,7 @@ public class P2pSocket extends Thread{
 						if (this.nbrList.update(tempRecord)){
 							tempStr = "{\"IP\":" + "\"" + inPacket.getAddress().toString() + "\"" + ",\"content\":" + 
 									tempJason.getString("content") + "}";
-//							t2 = System.currentTimeMillis();
 							this.receiveChannel.putPacket(tempStr);
-//							System.out.println("time: " + (t2 - t1));
 						}
 					}
 				}

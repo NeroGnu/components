@@ -3,6 +3,8 @@ package org.buaa.xuxian.net.broadcast;
 import java.util.Random;
 import java.util.Scanner;
 
+import com.google.gson.Gson;
+
 import net.sf.json.JSONObject;
 
 public class Test {
@@ -10,11 +12,23 @@ public class Test {
 	public static void main(String[] args){
 		ReceiveChannel Test1Channel = new ReceiveChannel(10);
 		ReceiveChannel Test2Channel = new ReceiveChannel(10);
-		P2pSocket Test1Socket = new P2pSocket("255.255.255.255", 4444, 4096, Test1Channel);
+		P2pSocket Test1Socket = new P2pSocket("255.255.255.255", 4444, 4096, Test1Channel, 2);
 		P2pSocket Test2Socket = new P2pSocket("255.255.255.255", 4445, 4096, Test2Channel);
 		
 		Test1 test1Show = new Test1(Test1Channel);
 		Test2 test2Show = new Test2(Test2Channel);
+		
+//		int[] d = {1, 2, 3, 5};
+//		test1Show.setD(d);
+//		int[] gd = test1Show.getD();
+//		System.out.println(" " + gd[0] + gd[1]);
+//		
+//		Gson gson = new Gson();
+//		String json = gson.toJson(test1Show);
+//		System.out.println(json);
+//		
+//		Test1 test12 = gson.fromJson(json, Test1.class);
+//		System.out.println(test12);
 		
 		new Thread(test1Show).start();
 		new Thread(test2Show).start();
@@ -26,6 +40,7 @@ public class Test {
 		Random rand = new Random();
 		JSONObject tempJson;
 		int count1, count2;
+		Gson gson = new Gson();
 		
 		while(scan.hasNextLine()){
 			scan.nextLine().getBytes();
@@ -34,11 +49,13 @@ public class Test {
 			
 			for (int i = 0; i < count1; i++){
 //				temp1 = new Student(10, "hrhehh", 17);
-				tempJson = new Test1(null).toJson();
+//				tempJson = new Test1(null).toJson();
+				String temp = gson.toJson(new Test1(null));
+				System.out.println(temp);
 //				tempJson = JSONObject.
 //				System.out.println("send:");
 //				System.out.println("send:" + tempJson.toString());
-				Test1Socket.send(tempJson.toString());
+				Test1Socket.send(temp);
 				try {
 					Thread.sleep(rand.nextInt(100));
 				} catch (InterruptedException e) {

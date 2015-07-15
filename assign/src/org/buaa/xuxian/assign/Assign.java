@@ -20,8 +20,8 @@ public class Assign {
 		this.plane_num = plane;
 		this.target_num = target;
 		this.self_ID = selfID;
-		this.eff_mat = new Matrix(plane, target);
-		this.res_mat = new Matrix(plane, target);
+		this.eff_mat = new Matrix(this.plane_num, this.target_num);
+		this.res_mat = new Matrix(this.plane_num, this.target_num);
 		this.median = 150;
 		this.divider = 8;
 	}
@@ -30,8 +30,8 @@ public class Assign {
 		this.plane_num = plane;
 		this.target_num = target;
 		this.self_ID = selfID;
-		this.eff_mat = new Matrix(plane, target);
-		this.res_mat = new Matrix(plane, target);
+		this.eff_mat = new Matrix(this.plane_num, this.target_num);
+		this.res_mat = new Matrix(this.plane_num, this.target_num);
 		this.median = median;
 		this.divider = divider;
 	}
@@ -73,7 +73,7 @@ public class Assign {
 		return eff_mat_b.sum();
 	}
 	
-	public synchronized double comparison(int time){
+	public synchronized double comparison(long time){
 		Matrix mat_ope = this.eff_mat.dotMultiply3(this.res_mat);
 		Matrix mat_b = this.eff_mat.clone();
 		for (int j = 0; j < this.target_num; j++){
@@ -91,12 +91,12 @@ public class Assign {
 		return mat_b.sum();
 	}
 	
-	public synchronized double disFilter(double dis, double g_ratio, int time, int excep_ID){
+	public synchronized double disFilter(double dis, double g_ratio, long time, int excep_ID){
 		return 1.0;
 	}
 	
 	public synchronized void update(AlgorithmLevel LEVEL, double[] data, int ID, 
-			int time, double dis, double g_ratio, int excep_ID){
+			long time, double dis, double g_ratio, int excep_ID){
 		this.eff_mat.setRow(ID, data);
 		switch (LEVEL){
 		case ALGOR_LEVEL_1:
@@ -123,8 +123,14 @@ public class Assign {
 		return -1;
 	}
 	
-	private double mySigmoid(double median, double divider, int x){
-		return 1 / (Math.exp((median - x) / divider) + 1);
+	
+	@Override
+	public String toString() {
+		return "Assign [eff_mat=" + eff_mat + ", res_mat=" + res_mat + "]";
+	}
+
+	private double mySigmoid(double median, double divider, long time){
+		return 1 / (Math.exp((median - time) / divider) + 1);
 	}
 	
 	public static void main(String[] args){
